@@ -6,8 +6,7 @@
   <title>AFFILIATE.OPS — Command Center</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.min.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,7 +20,68 @@
   <div id="root"></div>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } = Recharts;
+    function AreaChartSVG({ data, height = 200 }) {
+      const W = 600, H = height, PAD = { top: 10, right: 10, bottom: 30, left: 44 };
+      const vals = data.map(d => d.revenue);
+      const max = Math.max(...vals, 1);
+      const iW = W - PAD.left - PAD.right;
+      const iH = H - PAD.top - PAD.bottom;
+      const pts = data.map((d, i) => {
+        const x = PAD.left + (i / (data.length - 1)) * iW;
+        const y = PAD.top + (1 - d.revenue / max) * iH;
+        return [x, y];
+      });
+      const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+      const areaPath = linePath + ` L${pts[pts.length-1][0].toFixed(1)},${H - PAD.bottom} L${PAD.left},${H - PAD.bottom} Z`;
+      const ticks = [0, max * 0.5, max];
+      return (
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block", overflow: "visible" }}>
+          <defs>
+            <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#00ff87" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#00ff87" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {ticks.map((v, i) => {
+            const y = PAD.top + (1 - v / max) * iH;
+            return <g key={i}>
+              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="#1e2a38" strokeWidth="1" />
+              <text x={PAD.left - 6} y={y + 4} textAnchor="end" fill="#4a6079" fontSize="11" fontFamily="monospace">${Math.round(v)}</text>
+            </g>;
+          })}
+          <path d={areaPath} fill="url(#ag)" />
+          <path d={linePath} fill="none" stroke="#00ff87" strokeWidth="2" />
+          {data.map((d, i) => (
+            <g key={i}>
+              <text x={pts[i][0]} y={H - 6} textAnchor="middle" fill="#4a6079" fontSize="11" fontFamily="monospace">{d.month}</text>
+              <circle cx={pts[i][0]} cy={pts[i][1]} r="3" fill={d.revenue > 0 ? "#00ff87" : "#1e2a38"} />
+            </g>
+          ))}
+        </svg>
+      );
+    }
+
+    function BarChartSVG({ data, height = 160 }) {
+      const W = 600, H = height, PAD = { top: 10, right: 10, bottom: 30, left: 10 };
+      const max = Math.max(...data.map(d => d.revenue), 1);
+      const bw = (W - PAD.left - PAD.right) / data.length;
+      return (
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block", overflow: "visible" }}>
+          {data.map((d, i) => {
+            const bh = Math.max((d.revenue / max) * (H - PAD.top - PAD.bottom), d.revenue > 0 ? 3 : 0);
+            const x = PAD.left + i * bw + bw * 0.1;
+            const y = H - PAD.bottom - bh;
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={bw * 0.8} height={Math.max(bh, 2)} fill="#00ff87" rx="3" opacity={d.revenue > 0 ? 1 : 0.12} />
+                <text x={x + bw * 0.4} y={H - 8} textAnchor="middle" fill="#4a6079" fontSize="10" fontFamily="monospace">{d.name}</text>
+              </g>
+            );
+          })}
+        </svg>
+      );
+    }
+
 
     const AFFILIATES_DEFAULT = [
       { id: "aimlapi", name: "AI/ML API", url: "https://aimlapi.com/?via=jaymes", signup: "https://aimlapi.com/affiliate-program", commission: "30%", type: "recurring ∞", niche: "LLM APIs", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
@@ -225,20 +285,7 @@
                         </div>
                         <Btn onClick={() => setEditRevenue(true)} outline accent="#4a6079">Edit Data</Btn>
                       </div>
-                      <ResponsiveContainer width="100%" height={200}>
-                        <AreaChart data={revenueData}>
-                          <defs>
-                            <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#00ff87" stopOpacity={0.15} />
-                              <stop offset="95%" stopColor="#00ff87" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <XAxis dataKey="month" stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 11, fontFamily: "monospace" }} />
-                          <YAxis stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 11, fontFamily: "monospace" }} />
-                          <Tooltip contentStyle={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, fontFamily: "monospace", fontSize: 12 }} labelStyle={{ color: "#4a6079" }} itemStyle={{ color: "#00ff87" }} />
-                          <Area type="monotone" dataKey="revenue" stroke="#00ff87" strokeWidth={2} fill="url(#rg)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
+                      <AreaChartSVG data={revenueData} height={200} />
                     </div>
 
                     <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "24px" }}>
@@ -337,14 +384,7 @@
 
                   <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 24, marginBottom: 20 }}>
                     <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, color: "#e2e8f0", marginBottom: 16 }}>Revenue by Program</div>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <BarChart data={affiliates.map(a => ({ name: a.name, revenue: a.revenue, clicks: a.clicks }))}>
-                        <XAxis dataKey="name" stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 10, fontFamily: "monospace" }} />
-                        <YAxis stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 10, fontFamily: "monospace" }} />
-                        <Tooltip contentStyle={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, fontFamily: "monospace", fontSize: 12 }} />
-                        <Bar dataKey="revenue" fill="#00ff87" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <BarChartSVG data={affiliates.map(a => ({ name: a.name, revenue: a.revenue }))} height={160} />
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
