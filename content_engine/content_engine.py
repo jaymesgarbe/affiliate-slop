@@ -44,7 +44,10 @@ Affiliate product to naturally integrate: {affiliate} ({affiliate_url})
 Commission note (internal only, don't mention): {commission}
 Target audience: {audience}
 Blog canonical URL: https://jaymesinthestack.hashnode.dev
+Domain: https://jaymesinthestack.com
 Author: Jaymes (Berkeley EECS grad, developer tools & AI/ML infrastructure)
+Social: @jaymes_stack (Twitter/X), @jaymesinthestack (Instagram, Pinterest)
+Newsletter: https://jaymesinthestack.beehiiv.com
 
 Requirements:
 - Title with primary keyword
@@ -61,6 +64,12 @@ Requirements:
 Output as JSON with keys: title, meta_description, content (full markdown)""",
 
     "newsletter": """Write a newsletter section covering: {topic}
+
+Newsletter URL: https://jaymesinthestack.beehiiv.com
+Blog: https://jaymesinthestack.hashnode.dev
+Domain: https://jaymesinthestack.com
+Author: Jaymes (Berkeley EECS grad, developer tools & AI/ML infrastructure)
+Social: @jaymes_stack (Twitter/X), @jaymesinthestack (Instagram, Pinterest)
 
 Affiliate product to feature: {affiliate} ({affiliate_url})
 Target audience: {audience}

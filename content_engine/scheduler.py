@@ -31,6 +31,11 @@ LOG_FILE = LOG_DIR / "scheduler.log"
 # ── Site config ──────────────────────────────────────────────────────────────
 BLOG_URL = "https://jaymesinthestack.hashnode.dev"
 BLOG_PLATFORM = "hashnode"
+NEWSLETTER_URL = "https://jaymesinthestack.beehiiv.com"
+DOMAIN = "https://jaymesinthestack.com"
+TWITTER = "https://x.com/jaymes_stack"
+INSTAGRAM = "https://www.instagram.com/jaymesinthestack/"
+PINTEREST = "https://www.pinterest.com/jaymesinthestack/"
 
 # ── Affiliate registry ────────────────────────────────────────────────────────
 AFFILIATES = {
