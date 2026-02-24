@@ -1,0 +1,261 @@
+[
+  {
+    "slug": "aimlapi-llm-comparison",
+    "topic": "Best LLM APIs for developers in 2025: Claude vs GPT-4 vs Gemini vs open-source — a real benchmark",
+    "affiliate": "AI/ML API",
+    "affiliate_url": "https://aimlapi.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "ML engineers and developers building AI-powered applications",
+    "channels": ["blog", "newsletter", "twitter_thread", "instagram"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "This is your highest-ROI post. 'LLM API comparison' has strong buyer intent — people searching this have credit cards out."
+  },
+  {
+    "slug": "aimlapi-cut-costs",
+    "topic": "How to cut your LLM API costs by 60% without sacrificing quality",
+    "affiliate": "AI/ML API",
+    "affiliate_url": "https://aimlapi.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "ML engineers and startup founders running AI workloads",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Pain point post. Every team hitting API bills will search this. Natural place to recommend a cheaper unified API."
+  },
+  {
+    "slug": "aimlapi-getting-started",
+    "topic": "Stop juggling 5 different AI API keys — how to use a unified LLM gateway in your Python app",
+    "affiliate": "AI/ML API",
+    "affiliate_url": "https://aimlapi.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Python developers and ML engineers",
+    "channels": ["blog", "twitter_thread", "instagram"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Tutorial-style post with real code. These rank well and convert because they solve a specific problem."
+  },
+
+  {
+    "slug": "bannerbear-automate-visuals",
+    "topic": "How to auto-generate 100 social media images in 5 minutes with the Bannerbear API",
+    "affiliate": "Bannerbear",
+    "affiliate_url": "https://www.bannerbear.com/affiliate/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Developers and growth engineers building content automation pipelines",
+    "channels": ["blog", "twitter_thread", "instagram"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "This is a tutorial you can write from direct experience building your own content engine. Authentic = high trust."
+  },
+  {
+    "slug": "bannerbear-ecommerce",
+    "topic": "Automate your ecommerce product images with Python and Bannerbear API — full walkthrough",
+    "affiliate": "Bannerbear",
+    "affiliate_url": "https://www.bannerbear.com/affiliate/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Developers building tools for ecommerce brands",
+    "channels": ["blog", "newsletter"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Ecommerce developers are a high-value audience with budget. Strong tutorial with GitHub repo gets backlinks."
+  },
+  {
+    "slug": "bannerbear-og-images",
+    "topic": "Auto-generate dynamic OG images for every blog post using Bannerbear and Vercel Edge Functions",
+    "affiliate": "Bannerbear",
+    "affiliate_url": "https://www.bannerbear.com/affiliate/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Full-stack developers and indie hackers",
+    "channels": ["blog", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "OG image automation is a known pain point. This is a highly shareable technical post."
+  },
+
+  {
+    "slug": "feather-notion-blog",
+    "topic": "Turn your Notion workspace into a fully SEO-optimized blog without touching code",
+    "affiliate": "Feather",
+    "affiliate_url": "https://feather.so/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Indie hackers, solopreneurs, and developers who write in Notion",
+    "channels": ["blog", "newsletter", "twitter_thread", "instagram"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "This is extremely shareable in the indie hacker / builder community. Notion users are passionate evangelists."
+  },
+  {
+    "slug": "feather-vs-ghost",
+    "topic": "Feather vs Ghost vs Hashnode vs Substack — best blogging platform for developers in 2025",
+    "affiliate": "Feather",
+    "affiliate_url": "https://feather.so/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Developers and technical writers looking to start a blog",
+    "channels": ["blog", "newsletter", "pinterest"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Comparison posts consistently rank well. Anyone searching 'best blogging platform for developers' is ready to sign up."
+  },
+  {
+    "slug": "feather-content-workflow",
+    "topic": "My complete developer blog workflow: write in Notion, publish with Feather, promote with AI",
+    "affiliate": "Feather",
+    "affiliate_url": "https://feather.so/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Developer-bloggers and technical content creators",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Personal workflow posts perform extremely well. This is something you're literally building — write it authentically."
+  },
+
+  {
+    "slug": "keygen-software-licensing",
+    "topic": "How to add software licensing to your SaaS or CLI tool in under an hour using Keygen API",
+    "affiliate": "Keygen",
+    "affiliate_url": "https://keygen.sh/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Indie developers and SaaS builders shipping paid software products",
+    "channels": ["blog", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Very specific problem, very specific solution. Developers building paid tools will find this and convert highly."
+  },
+  {
+    "slug": "keygen-vs-alternatives",
+    "topic": "Keygen vs Paddle vs LemonSqueezy vs Gumroad — best licensing and payments for developer tools",
+    "affiliate": "Keygen",
+    "affiliate_url": "https://keygen.sh/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Developers and indie hackers monetizing software tools",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "High-intent comparison post. Anyone searching this is actively deciding where to put their product."
+  },
+  {
+    "slug": "keygen-python-integration",
+    "topic": "Building a license-gated Python CLI tool from scratch — complete walkthrough with Keygen",
+    "affiliate": "Keygen",
+    "affiliate_url": "https://keygen.sh/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Python developers shipping paid CLI tools and desktop apps",
+    "channels": ["blog", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Tutorial with full code example. GitHub repo increases backlinks and credibility."
+  },
+
+  {
+    "slug": "serply-web-scraping",
+    "topic": "Stop getting blocked: how to scrape Google Search results reliably with Serply.io API",
+    "affiliate": "Serply.io",
+    "affiliate_url": "https://serply.io/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Developers building SEO tools, data pipelines, and research automation",
+    "channels": ["blog", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Anyone who has tried to scrape Google knows the pain. This post solves a very real problem with a direct solution."
+  },
+  {
+    "slug": "serply-seo-pipeline",
+    "topic": "Build an automated SERP rank tracker in Python for under $10/month",
+    "affiliate": "Serply.io",
+    "affiliate_url": "https://serply.io/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "SEO engineers and developers building ranking tools",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Data engineering + SEO crossover audience. Highly shareable in both communities."
+  },
+  {
+    "slug": "serply-vs-alternatives",
+    "topic": "Serply vs SerpApi vs DataForSEO vs ScaleSerp — best Google SERP API in 2025",
+    "affiliate": "Serply.io",
+    "affiliate_url": "https://serply.io/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Developers and SEO engineers evaluating SERP data providers",
+    "channels": ["blog", "newsletter"],
+    "scheduled": true,
+    "tier": 1,
+    "notes": "Direct comparison post targeting buyers who are already evaluating alternatives. High conversion intent."
+  },
+
+  {
+    "slug": "neuraltext-content-ops",
+    "topic": "How I automated my entire content pipeline with NeuralText — from keyword research to published post",
+    "affiliate": "NeuralText",
+    "affiliate_url": "https://neuraltext.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Developers, indie hackers, and content marketers building scalable blogs",
+    "channels": ["blog", "newsletter", "twitter_thread", "instagram"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "Meta content — writing about your content pipeline using a tool in that pipeline. Very authentic and shareable."
+  },
+  {
+    "slug": "neuraltext-seo-keywords",
+    "topic": "NeuralText vs SurferSEO vs Clearscope — best AI writing tool for SEO in 2025",
+    "affiliate": "NeuralText",
+    "affiliate_url": "https://neuraltext.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Content marketers and technical bloggers optimizing for SEO",
+    "channels": ["blog", "newsletter", "pinterest"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "Comparison post in a competitive but high-intent space. Good for Pinterest too — marketers use it heavily."
+  },
+
+  {
+    "slug": "compint-competitor-tracking",
+    "topic": "How to automatically track your SaaS competitors' pricing, features, and positioning changes",
+    "affiliate": "Compint",
+    "affiliate_url": "https://compint.io/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "SaaS founders and product managers running competitive intelligence",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "SaaS founders are a high-LTV audience. Competitive intel is a real pain point with budget attached."
+  },
+  {
+    "slug": "compint-build-vs-buy",
+    "topic": "Build vs buy: should you build your own competitor tracker or use a tool like Compint?",
+    "affiliate": "Compint",
+    "affiliate_url": "https://compint.io/?ref=YOUR_ID",
+    "commission": "25% recurring forever",
+    "audience": "Startup CTOs and founders evaluating dev time vs tool spend",
+    "channels": ["blog", "twitter_thread"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "Build vs buy posts resonate strongly with technical founders. You can speak to both sides authentically."
+  },
+
+  {
+    "slug": "instatus-status-pages",
+    "topic": "Why your SaaS needs a status page (and how to set one up in 10 minutes with Instatus)",
+    "affiliate": "Instatus",
+    "affiliate_url": "https://instatus.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "SaaS developers and DevOps engineers managing production systems",
+    "channels": ["blog", "newsletter", "twitter_thread"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "Every developer team needs a status page. Low friction, low price point = high conversion rate."
+  },
+  {
+    "slug": "instatus-vs-statuspage",
+    "topic": "Instatus vs Atlassian Statuspage vs Betterstack — best status page tool for indie devs and startups",
+    "affiliate": "Instatus",
+    "affiliate_url": "https://instatus.com/?ref=YOUR_ID",
+    "commission": "30% recurring forever",
+    "audience": "Indie developers and startup engineering teams",
+    "channels": ["blog", "twitter_thread", "pinterest"],
+    "scheduled": true,
+    "tier": 2,
+    "notes": "Atlassian's Statuspage is expensive — there's a real market for this comparison among bootstrapped teams."
+  }
+]

@@ -1,0 +1,560 @@
+import { useState, useEffect, useCallback } from "react";
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+
+const AFFILIATES_DEFAULT = [
+  { id: "aimlapi", name: "AI/ML API", url: "https://aimlapi.com/?ref=YOUR_ID", signup: "https://aimlapi.com/affiliate-program", commission: "30%", type: "recurring ∞", niche: "LLM APIs", clicks: 0, conversions: 0, revenue: 0, active: true },
+  { id: "bannerbear", name: "Bannerbear", url: "https://www.bannerbear.com/affiliate/?ref=YOUR_ID", signup: "https://www.bannerbear.com/affiliate/", commission: "30%", type: "recurring ∞", niche: "Dev Automation", clicks: 0, conversions: 0, revenue: 0, active: true },
+  { id: "feather", name: "Feather", url: "https://feather.so/?ref=YOUR_ID", signup: "https://feather.getrewardful.com/", commission: "25%", type: "recurring ∞", niche: "Dev Blogging", clicks: 0, conversions: 0, revenue: 0, active: true },
+  { id: "keygen", name: "Keygen", url: "https://keygen.sh/?ref=YOUR_ID", signup: "https://keygen.sh/affiliates/", commission: "30%", type: "recurring ∞", niche: "SW Licensing", clicks: 0, conversions: 0, revenue: 0, active: true },
+  { id: "serply", name: "Serply.io", url: "https://serply.io/?ref=YOUR_ID", signup: "https://affiliates.reflio.com/invite/serply", commission: "25%", type: "recurring ∞", niche: "SERP APIs", clicks: 0, conversions: 0, revenue: 0, active: true },
+  { id: "neuraltext", name: "NeuralText", url: "https://neuraltext.com/?ref=YOUR_ID", signup: "https://neuraltext.getrewardful.com/signup", commission: "30%", type: "recurring ∞", niche: "AI Content", clicks: 0, conversions: 0, revenue: 0, active: false },
+  { id: "compint", name: "Compint", url: "https://compint.io/?ref=YOUR_ID", signup: "https://compint.lemonsqueezy.com/affiliates", commission: "25%", type: "recurring ∞", niche: "Competitor Intel", clicks: 0, conversions: 0, revenue: 0, active: false },
+  { id: "instatus", name: "Instatus", url: "https://instatus.com/?ref=YOUR_ID", signup: "https://instatus.com/affiliates", commission: "30%", type: "recurring ∞", niche: "Status Pages", clicks: 0, conversions: 0, revenue: 0, active: false },
+];
+
+const SOCIALS_DEFAULT = [
+  { id: "blog", name: "Blog", icon: "✦", color: "#00ff87", url: "", lastEntry: "", lastDate: "", platform: "Ghost / Feather" },
+  { id: "newsletter", name: "Newsletter", icon: "◈", color: "#38bdf8", url: "", lastEntry: "", lastDate: "", platform: "Beehiiv" },
+  { id: "twitter", name: "Twitter / X", icon: "◆", color: "#e2e8f0", url: "", lastEntry: "", lastDate: "", platform: "X" },
+  { id: "instagram", name: "Instagram", icon: "◉", color: "#f472b6", url: "", lastEntry: "", lastDate: "", platform: "Instagram" },
+  { id: "pinterest", name: "Pinterest", icon: "◈", color: "#fb7185", url: "", lastEntry: "", lastDate: "", platform: "Pinterest" },
+];
+
+const REVENUE_DEFAULT = [
+  { month: "Jan", revenue: 0 }, { month: "Feb", revenue: 0 }, { month: "Mar", revenue: 0 },
+  { month: "Apr", revenue: 0 }, { month: "May", revenue: 0 }, { month: "Jun", revenue: 0 },
+];
+
+const TASKS_DEFAULT = [
+  { id: 1, text: "Sign up for AI/ML API affiliate program", done: false, priority: "high" },
+  { id: 2, text: "Sign up for Bannerbear affiliate program", done: false, priority: "high" },
+  { id: 3, text: "Sign up for Feather affiliate program", done: false, priority: "high" },
+  { id: 4, text: "Sign up for Keygen affiliate program", done: false, priority: "high" },
+  { id: 5, text: "Sign up for Serply.io affiliate program", done: false, priority: "high" },
+  { id: 6, text: "Replace YOUR_ID in scheduler.py with real affiliate IDs", done: false, priority: "high" },
+  { id: 7, text: "Set up blog (Ghost or Feather)", done: false, priority: "medium" },
+  { id: 8, text: "Set up newsletter (Beehiiv)", done: false, priority: "medium" },
+  { id: 9, text: "Run first content generation: aimlapi-llm-comparison", done: false, priority: "medium" },
+  { id: 10, text: "Publish first blog post", done: false, priority: "medium" },
+];
+
+function StatCard({ label, value, sub, accent = "#00ff87", trend }) {
+  return (
+    <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "20px 24px", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${accent}40, ${accent}, ${accent}40)` }} />
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4a6079", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 800, color: accent, lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4a6079", marginTop: 6 }}>{sub}</div>}
+      {trend !== undefined && (
+        <div style={{ position: "absolute", top: 20, right: 20, fontSize: 12, color: trend >= 0 ? "#00ff87" : "#f87171", fontFamily: "monospace" }}>
+          {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Modal({ open, onClose, title, children }) {
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 16, padding: 32, width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: "#e2e8f0" }}>{title}</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#4a6079", fontSize: 20, cursor: "pointer" }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, placeholder, type = "text" }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: "block", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4a6079", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ width: "100%", background: "#161b22", border: "1px solid #1e2a38", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+    </div>
+  );
+}
+
+function Btn({ children, onClick, accent = "#00ff87", outline }) {
+  return (
+    <button onClick={onClick} style={{
+      background: outline ? "transparent" : accent, color: outline ? accent : "#0a0e1a",
+      border: `1px solid ${accent}`, borderRadius: 8, padding: "10px 20px",
+      fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 700,
+      cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em"
+    }}>{children}</button>
+  );
+}
+
+export default function Dashboard() {
+  const [affiliates, setAffiliates] = useState(AFFILIATES_DEFAULT);
+  const [socials, setSocials] = useState(SOCIALS_DEFAULT);
+  const [revenueData, setRevenueData] = useState(REVENUE_DEFAULT);
+  const [tasks, setTasks] = useState(TASKS_DEFAULT);
+  const [tab, setTab] = useState("overview");
+  const [editAffiliate, setEditAffiliate] = useState(null);
+  const [editSocial, setEditSocial] = useState(null);
+  const [editRevenue, setEditRevenue] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [newTask, setNewTask] = useState("");
+  const [addingAff, setAddingAff] = useState(false);
+  const [newAff, setNewAff] = useState({ name: "", url: "", commission: "", type: "recurring ∞", niche: "", clicks: 0, conversions: 0, revenue: 0 });
+
+  // Load from storage
+  useEffect(() => {
+    async function load() {
+      try {
+        const r1 = await window.storage.get("affiliates");
+        if (r1) setAffiliates(JSON.parse(r1.value));
+        const r2 = await window.storage.get("socials");
+        if (r2) setSocials(JSON.parse(r2.value));
+        const r3 = await window.storage.get("revenueData");
+        if (r3) setRevenueData(JSON.parse(r3.value));
+        const r4 = await window.storage.get("tasks");
+        if (r4) setTasks(JSON.parse(r4.value));
+      } catch (e) {}
+      setLoaded(true);
+    }
+    load();
+  }, []);
+
+  const save = useCallback(async (key, data) => {
+    try { await window.storage.set(key, JSON.stringify(data)); } catch (e) {}
+  }, []);
+
+  const updateAffiliates = (data) => { setAffiliates(data); save("affiliates", data); };
+  const updateSocials = (data) => { setSocials(data); save("socials", data); };
+  const updateRevenue = (data) => { setRevenueData(data); save("revenueData", data); };
+  const updateTasks = (data) => { setTasks(data); save("tasks", data); };
+
+  const totalRevenue = affiliates.reduce((s, a) => s + (a.revenue || 0), 0);
+  const totalClicks = affiliates.reduce((s, a) => s + (a.clicks || 0), 0);
+  const totalConversions = affiliates.reduce((s, a) => s + (a.conversions || 0), 0);
+  const convRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(1) : "0.0";
+  const topAffiliate = [...affiliates].sort((a, b) => b.revenue - a.revenue)[0];
+  const tasksDone = tasks.filter(t => t.done).length;
+
+  const TABS = ["overview", "affiliates", "content", "tasks"];
+
+  if (!loaded) return <div style={{ background: "#080c12", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#00ff87", fontFamily: "monospace" }}>Loading...</div>;
+
+  return (
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #080c12; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #0d1117; } ::-webkit-scrollbar-thumb { background: #1e2a38; border-radius: 2px; }
+        .tab-btn { transition: all 0.15s; } .tab-btn:hover { color: #00ff87 !important; }
+        .aff-row:hover { background: #111827 !important; } .aff-row { transition: background 0.15s; }
+        .social-card:hover { border-color: #00ff87 !important; transform: translateY(-2px); } .social-card { transition: all 0.2s; }
+        .task-item:hover { background: #111827 !important; } .task-item { transition: background 0.15s; }
+        input:focus { border-color: #00ff87 !important; }
+        .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+      `}</style>
+
+      <div style={{ background: "#080c12", minHeight: "100vh", color: "#e2e8f0", fontFamily: "'JetBrains Mono', monospace" }}>
+
+        {/* Header */}
+        <div style={{ borderBottom: "1px solid #1e2a38", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#00ff87", boxShadow: "0 0 8px #00ff87" }} />
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 16, color: "#e2e8f0", letterSpacing: "0.02em" }}>AFFILIATE.OPS</span>
+            <span style={{ color: "#1e2a38", fontSize: 14 }}>|</span>
+            <span style={{ fontSize: 11, color: "#4a6079" }}>command center</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 11, color: "#4a6079" }}>{new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</div>
+            <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, padding: "4px 12px", fontSize: 11, color: "#00ff87" }}>
+              ${totalRevenue.toFixed(2)}/mo MRR
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ borderBottom: "1px solid #1e2a38", padding: "0 32px", display: "flex", gap: 0 }}>
+          {TABS.map(t => (
+            <button key={t} className="tab-btn" onClick={() => setTab(t)} style={{
+              background: "none", border: "none", padding: "14px 20px", fontSize: 11, textTransform: "uppercase",
+              letterSpacing: "0.12em", cursor: "pointer", color: tab === t ? "#00ff87" : "#4a6079",
+              borderBottom: tab === t ? "2px solid #00ff87" : "2px solid transparent", marginBottom: -1
+            }}>{t}</button>
+          ))}
+        </div>
+
+        <div style={{ padding: "28px 32px", maxWidth: 1400 }}>
+
+          {/* ── OVERVIEW TAB ── */}
+          {tab === "overview" && (
+            <div>
+              {/* Stat Cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
+                <StatCard label="Monthly Revenue" value={`$${totalRevenue.toFixed(2)}`} sub="recurring affiliate commissions" accent="#00ff87" />
+                <StatCard label="Total Clicks" value={totalClicks.toLocaleString()} sub="across all affiliate links" accent="#38bdf8" />
+                <StatCard label="Conversions" value={totalConversions} sub={`${convRate}% conversion rate`} accent="#a78bfa" />
+                <StatCard label="Top Performer" value={topAffiliate?.name || "—"} sub={topAffiliate ? `$${topAffiliate.revenue.toFixed(2)}/mo` : "no data yet"} accent="#fb923c" />
+              </div>
+
+              {/* Revenue Chart + Social Endpoints */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, marginBottom: 28 }}>
+                <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "24px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                    <div>
+                      <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0" }}>Revenue Over Time</div>
+                      <div style={{ fontSize: 11, color: "#4a6079", marginTop: 2 }}>Monthly affiliate commissions ($)</div>
+                    </div>
+                    <Btn onClick={() => setEditRevenue(true)} outline accent="#4a6079">Edit Data</Btn>
+                  </div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={revenueData}>
+                      <defs>
+                        <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00ff87" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#00ff87" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="month" stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 11, fontFamily: "monospace" }} />
+                      <YAxis stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 11, fontFamily: "monospace" }} />
+                      <Tooltip contentStyle={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, fontFamily: "monospace", fontSize: 12 }} labelStyle={{ color: "#4a6079" }} itemStyle={{ color: "#00ff87" }} />
+                      <Area type="monotone" dataKey="revenue" stroke="#00ff87" strokeWidth={2} fill="url(#rg)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Social Endpoints */}
+                <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "24px" }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0", marginBottom: 4 }}>Social Endpoints</div>
+                  <div style={{ fontSize: 11, color: "#4a6079", marginBottom: 16 }}>Click any to edit</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {socials.map(s => (
+                      <div key={s.id} className="social-card" onClick={() => setEditSocial({ ...s })} style={{
+                        border: `1px solid ${s.url ? "#1e2a38" : "#1e2a38"}`, borderRadius: 10, padding: "12px 14px",
+                        cursor: "pointer", background: "#080c12"
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ color: s.color, fontSize: 14 }}>{s.icon}</span>
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{s.name}</div>
+                              <div style={{ fontSize: 10, color: "#4a6079" }}>{s.platform}</div>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            {s.url ? (
+                              <a href={s.url} target="_blank" onClick={e => e.stopPropagation()} style={{ fontSize: 10, color: s.color, textDecoration: "none" }}>↗ open</a>
+                            ) : (
+                              <span style={{ fontSize: 10, color: "#2d3748" }}>not set</span>
+                            )}
+                          </div>
+                        </div>
+                        {s.lastEntry && (
+                          <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #1e2a38" }}>
+                            <div style={{ fontSize: 10, color: "#4a6079", lineHeight: 1.4 }}>Latest: <span style={{ color: "#94a3b8" }}>{s.lastEntry}</span></div>
+                            {s.lastDate && <div style={{ fontSize: 10, color: "#2d3748", marginTop: 2 }}>{s.lastDate}</div>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Affiliate Quick Table */}
+              <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ padding: "18px 24px", borderBottom: "1px solid #1e2a38", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0" }}>Affiliate Programs</div>
+                  <span style={{ fontSize: 11, color: "#4a6079" }}>click row to edit</span>
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #1e2a38" }}>
+                      {["Program", "Niche", "Commission", "Clicks", "Conv.", "MRR", "Status"].map(h => (
+                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, color: "#4a6079", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 500 }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {affiliates.map(a => (
+                      <tr key={a.id} className="aff-row" onClick={() => setEditAffiliate({ ...a })} style={{ borderBottom: "1px solid #0d1117", cursor: "pointer" }}>
+                        <td style={{ padding: "12px 16px" }}>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: "#e2e8f0" }}>{a.name}</div>
+                          <div style={{ fontSize: 10, color: "#2d3748", marginTop: 2 }}>{a.url.replace("https://", "").split("?")[0]}</div>
+                        </td>
+                        <td style={{ padding: "12px 16px", fontSize: 11, color: "#64748b" }}>{a.niche}</td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <span style={{ color: "#00ff87", fontSize: 13, fontWeight: 700 }}>{a.commission}</span>
+                          <span style={{ fontSize: 10, color: "#4a6079", marginLeft: 4 }}>{a.type}</span>
+                        </td>
+                        <td style={{ padding: "12px 16px", fontSize: 13, color: "#38bdf8" }}>{a.clicks.toLocaleString()}</td>
+                        <td style={{ padding: "12px 16px", fontSize: 13, color: "#a78bfa" }}>{a.conversions}</td>
+                        <td style={{ padding: "12px 16px", fontSize: 13, color: "#fb923c", fontWeight: 700 }}>${a.revenue.toFixed(2)}</td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <span className="pill" style={{ background: a.active ? "#00ff8718" : "#1e2a38", color: a.active ? "#00ff87" : "#4a6079" }}>
+                            {a.active ? "tier 1" : "tier 2"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── AFFILIATES TAB ── */}
+          {tab === "affiliates" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, color: "#e2e8f0" }}>Affiliate Programs</div>
+                  <div style={{ fontSize: 11, color: "#4a6079", marginTop: 4 }}>Manage links, track performance, log conversions</div>
+                </div>
+                <Btn onClick={() => setAddingAff(true)}>+ Add Program</Btn>
+              </div>
+
+              {/* Revenue bar chart */}
+              <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 24, marginBottom: 20 }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, color: "#e2e8f0", marginBottom: 16 }}>Revenue by Program</div>
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={affiliates.map(a => ({ name: a.name, revenue: a.revenue, clicks: a.clicks }))}>
+                    <XAxis dataKey="name" stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 10, fontFamily: "monospace" }} />
+                    <YAxis stroke="#1e2a38" tick={{ fill: "#4a6079", fontSize: 10, fontFamily: "monospace" }} />
+                    <Tooltip contentStyle={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, fontFamily: "monospace", fontSize: 12 }} />
+                    <Bar dataKey="revenue" fill="#00ff87" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+                {affiliates.map(a => (
+                  <div key={a.id} style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 20, position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: a.active ? "linear-gradient(90deg, #00ff8720, #00ff87, #00ff8720)" : "linear-gradient(90deg, #1e2a38, #2d3748, #1e2a38)" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                      <div>
+                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: "#e2e8f0" }}>{a.name}</div>
+                        <div style={{ fontSize: 11, color: "#4a6079", marginTop: 2 }}>{a.niche}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span className="pill" style={{ background: a.active ? "#00ff8718" : "#1e2a38", color: a.active ? "#00ff87" : "#4a6079" }}>
+                          {a.active ? "tier 1" : "tier 2"}
+                        </span>
+                        <button onClick={() => setEditAffiliate({ ...a })} style={{ background: "#161b22", border: "1px solid #1e2a38", borderRadius: 6, padding: "4px 10px", color: "#4a6079", fontSize: 11, cursor: "pointer" }}>Edit</button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 16 }}>
+                      {[
+                        { label: "Clicks", value: a.clicks.toLocaleString(), color: "#38bdf8" },
+                        { label: "Conversions", value: a.conversions, color: "#a78bfa" },
+                        { label: "MRR", value: `$${a.revenue.toFixed(2)}`, color: "#fb923c" },
+                      ].map(s => (
+                        <div key={s.label} style={{ background: "#080c12", borderRadius: 8, padding: "10px 12px" }}>
+                          <div style={{ fontSize: 10, color: "#4a6079", marginBottom: 4 }}>{s.label}</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: s.color }}>{s.value}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ background: "#080c12", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
+                      <div style={{ fontSize: 10, color: "#4a6079", marginBottom: 4 }}>Commission</div>
+                      <div style={{ fontSize: 14, color: "#00ff87", fontWeight: 700 }}>{a.commission} <span style={{ fontSize: 10, color: "#4a6079" }}>{a.type}</span></div>
+                    </div>
+
+                    <div style={{ background: "#080c12", borderRadius: 8, padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontSize: 10, color: "#4a6079", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, marginRight: 8 }}>
+                        {a.url.includes("YOUR_ID") ? <span style={{ color: "#f87171" }}>⚠ Replace YOUR_ID</span> : a.url}
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <a href={a.signup} target="_blank" style={{ fontSize: 10, color: "#38bdf8", textDecoration: "none", whiteSpace: "nowrap" }}>sign up ↗</a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── CONTENT TAB ── */}
+          {tab === "content" && (
+            <div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, color: "#e2e8f0" }}>Content & Social</div>
+                <div style={{ fontSize: 11, color: "#4a6079", marginTop: 4 }}>Manage your social endpoints and track latest posts</div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+                {socials.map(s => (
+                  <div key={s.id} className="social-card" onClick={() => setEditSocial({ ...s })} style={{ background: "#0d1117", border: `1px solid #1e2a38`, borderRadius: 12, padding: 20, cursor: "pointer" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: s.color }}>{s.icon}</div>
+                        <div>
+                          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0" }}>{s.name}</div>
+                          <div style={{ fontSize: 10, color: "#4a6079" }}>{s.platform}</div>
+                        </div>
+                      </div>
+                      {s.url ? (
+                        <a href={s.url} target="_blank" onClick={e => e.stopPropagation()} style={{ fontSize: 11, color: s.color, textDecoration: "none" }}>↗</a>
+                      ) : (
+                        <span style={{ fontSize: 10, color: "#2d3748" }}>not set</span>
+                      )}
+                    </div>
+
+                    <div style={{ borderTop: "1px solid #1e2a38", paddingTop: 14 }}>
+                      <div style={{ fontSize: 10, color: "#4a6079", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>Latest Entry</div>
+                      {s.lastEntry ? (
+                        <>
+                          <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>{s.lastEntry}</div>
+                          {s.lastDate && <div style={{ fontSize: 10, color: "#2d3748", marginTop: 6 }}>{s.lastDate}</div>}
+                        </>
+                      ) : (
+                        <div style={{ fontSize: 11, color: "#2d3748", fontStyle: "italic" }}>No entries yet — click to add</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Content pipeline status */}
+              <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 24 }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0", marginBottom: 16 }}>Content Pipeline</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                  {[
+                    { stage: "Generated", count: 0, color: "#38bdf8", desc: "AI drafts ready for review" },
+                    { stage: "Edited", count: 0, color: "#a78bfa", desc: "Reviewed and approved" },
+                    { stage: "Scheduled", count: 0, color: "#fb923c", desc: "Queued for publish" },
+                    { stage: "Published", count: 0, color: "#00ff87", desc: "Live on endpoints" },
+                  ].map(s => (
+                    <div key={s.stage} style={{ background: "#080c12", borderRadius: 10, padding: "16px" }}>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: s.color, fontFamily: "'Syne', sans-serif" }}>{s.count}</div>
+                      <div style={{ fontSize: 12, color: "#e2e8f0", fontWeight: 700, marginTop: 4 }}>{s.stage}</div>
+                      <div style={{ fontSize: 10, color: "#4a6079", marginTop: 4 }}>{s.desc}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 16, padding: "12px 16px", background: "#080c12", borderRadius: 8, fontSize: 11, color: "#4a6079" }}>
+                  💡 Run <span style={{ color: "#00ff87" }}>python scheduler.py --tier 1</span> to generate content, then update social endpoints above with your latest entries.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── TASKS TAB ── */}
+          {tab === "tasks" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, color: "#e2e8f0" }}>Task Queue</div>
+                  <div style={{ fontSize: 11, color: "#4a6079", marginTop: 4 }}>{tasksDone}/{tasks.length} completed</div>
+                </div>
+                <div style={{ display: "flex", gap: 4, background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, padding: 4 }}>
+                  <div style={{ height: 8, borderRadius: 4, background: "#00ff87", width: `${tasks.length > 0 ? (tasksDone / tasks.length) * 200 : 0}px`, transition: "width 0.3s", minWidth: 4 }} />
+                  <div style={{ height: 8, borderRadius: 4, background: "#1e2a38", flex: 1 }} />
+                </div>
+              </div>
+
+              {/* Add task */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                <input value={newTask} onChange={e => setNewTask(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && newTask.trim()) { const t = [...tasks, { id: Date.now(), text: newTask.trim(), done: false, priority: "medium" }]; updateTasks(t); setNewTask(""); }}}
+                  placeholder="Add a task... (press Enter)"
+                  style={{ flex: 1, background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, padding: "10px 16px", color: "#e2e8f0", fontFamily: "'JetBrains Mono', monospace", fontSize: 12, outline: "none" }} />
+                <Btn onClick={() => { if (newTask.trim()) { const t = [...tasks, { id: Date.now(), text: newTask.trim(), done: false, priority: "medium" }]; updateTasks(t); setNewTask(""); } }}>Add</Btn>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["high", "medium", "low"].map(priority => {
+                  const pts = tasks.filter(t => t.priority === priority);
+                  if (pts.length === 0) return null;
+                  return (
+                    <div key={priority}>
+                      <div style={{ fontSize: 10, color: "#4a6079", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8, marginTop: 16 }}>
+                        <span style={{ color: priority === "high" ? "#f87171" : priority === "medium" ? "#fb923c" : "#4a6079" }}>● </span>{priority} priority
+                      </div>
+                      {pts.map(t => (
+                        <div key={t.id} className="task-item" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 10, background: t.done ? "#080c12" : "#0d1117", cursor: "pointer", marginBottom: 4 }}
+                          onClick={() => { const u = tasks.map(x => x.id === t.id ? { ...x, done: !x.done } : x); updateTasks(u); }}>
+                          <div style={{ width: 18, height: 18, border: `2px solid ${t.done ? "#00ff87" : "#1e2a38"}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: t.done ? "#00ff87" : "transparent", flexShrink: 0 }}>
+                            {t.done && <span style={{ color: "#080c12", fontSize: 11, lineHeight: 1 }}>✓</span>}
+                          </div>
+                          <span style={{ flex: 1, fontSize: 13, color: t.done ? "#2d3748" : "#e2e8f0", textDecoration: t.done ? "line-through" : "none" }}>{t.text}</span>
+                          <button onClick={e => { e.stopPropagation(); updateTasks(tasks.filter(x => x.id !== t.id)); }} style={{ background: "none", border: "none", color: "#2d3748", cursor: "pointer", fontSize: 14, padding: "0 4px" }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── MODALS ── */}
+
+        {/* Edit Affiliate */}
+        <Modal open={!!editAffiliate} onClose={() => setEditAffiliate(null)} title={editAffiliate ? `Edit: ${editAffiliate.name}` : ""}>
+          {editAffiliate && (
+            <>
+              <Input label="Affiliate URL (your referral link)" value={editAffiliate.url} onChange={v => setEditAffiliate({ ...editAffiliate, url: v })} placeholder="https://..." />
+              <Input label="Clicks (manual or from dashboard)" value={editAffiliate.clicks} onChange={v => setEditAffiliate({ ...editAffiliate, clicks: parseInt(v) || 0 })} type="number" />
+              <Input label="Conversions" value={editAffiliate.conversions} onChange={v => setEditAffiliate({ ...editAffiliate, conversions: parseInt(v) || 0 })} type="number" />
+              <Input label="Monthly Revenue ($)" value={editAffiliate.revenue} onChange={v => setEditAffiliate({ ...editAffiliate, revenue: parseFloat(v) || 0 })} type="number" />
+              <Input label="Commission %" value={editAffiliate.commission} onChange={v => setEditAffiliate({ ...editAffiliate, commission: v })} placeholder="30%" />
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
+                <label style={{ fontSize: 12, color: "#e2e8f0" }}>
+                  <input type="checkbox" checked={editAffiliate.active} onChange={e => setEditAffiliate({ ...editAffiliate, active: e.target.checked })} style={{ marginRight: 8 }} />
+                  Tier 1 (active)
+                </label>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn onClick={() => { updateAffiliates(affiliates.map(a => a.id === editAffiliate.id ? editAffiliate : a)); setEditAffiliate(null); }}>Save Changes</Btn>
+                <Btn outline accent="#f87171" onClick={() => { updateAffiliates(affiliates.filter(a => a.id !== editAffiliate.id)); setEditAffiliate(null); }}>Remove</Btn>
+              </div>
+            </>
+          )}
+        </Modal>
+
+        {/* Add Affiliate */}
+        <Modal open={addingAff} onClose={() => setAddingAff(false)} title="Add Affiliate Program">
+          <Input label="Program Name" value={newAff.name} onChange={v => setNewAff({ ...newAff, name: v })} placeholder="e.g. Vercel" />
+          <Input label="Your Referral URL" value={newAff.url} onChange={v => setNewAff({ ...newAff, url: v })} placeholder="https://vercel.com/?ref=..." />
+          <Input label="Commission Rate" value={newAff.commission} onChange={v => setNewAff({ ...newAff, commission: v })} placeholder="e.g. 25%" />
+          <Input label="Niche / Category" value={newAff.niche} onChange={v => setNewAff({ ...newAff, niche: v })} placeholder="e.g. Cloud Hosting" />
+          <Btn onClick={() => {
+            if (!newAff.name) return;
+            const a = { ...newAff, id: newAff.name.toLowerCase().replace(/\s/g, "-"), active: true };
+            updateAffiliates([...affiliates, a]);
+            setNewAff({ name: "", url: "", commission: "", type: "recurring ∞", niche: "", clicks: 0, conversions: 0, revenue: 0 });
+            setAddingAff(false);
+          }}>Add Program</Btn>
+        </Modal>
+
+        {/* Edit Social */}
+        <Modal open={!!editSocial} onClose={() => setEditSocial(null)} title={editSocial ? `Edit: ${editSocial.name}` : ""}>
+          {editSocial && (
+            <>
+              <Input label="Profile / Site URL" value={editSocial.url} onChange={v => setEditSocial({ ...editSocial, url: v })} placeholder="https://..." />
+              <Input label="Latest Post or Entry Title" value={editSocial.lastEntry} onChange={v => setEditSocial({ ...editSocial, lastEntry: v })} placeholder="e.g. GCP vs AWS for ML pipelines" />
+              <Input label="Date Published" value={editSocial.lastDate} onChange={v => setEditSocial({ ...editSocial, lastDate: v })} placeholder="e.g. Feb 24, 2026" />
+              <Btn onClick={() => { updateSocials(socials.map(s => s.id === editSocial.id ? editSocial : s)); setEditSocial(null); }}>Save</Btn>
+            </>
+          )}
+        </Modal>
+
+        {/* Edit Revenue */}
+        <Modal open={editRevenue} onClose={() => setEditRevenue(false)} title="Edit Monthly Revenue">
+          {revenueData.map((r, i) => (
+            <Input key={r.month} label={r.month} value={r.revenue} type="number"
+              onChange={v => { const d = [...revenueData]; d[i] = { ...r, revenue: parseFloat(v) || 0 }; setRevenueData(d); }} />
+          ))}
+          <Btn onClick={() => { updateRevenue(revenueData); setEditRevenue(false); }}>Save Revenue Data</Btn>
+        </Modal>
+
+      </div>
+    </>
+  );
+}
