@@ -179,7 +179,7 @@ def generate_content(channel: str, brief: dict) -> dict:
 def save_output(channel: str, content: dict, output_dir: Path, brief: dict):
     """Save generated content to files."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    slug = brief['topic'][:40].lower().replace(' ', '_').replace('/', '_')
+    slug = brief['topic'][:40].lower().replace(' ', '_').replace('/', '_').replace(':', '').replace('?', '').replace('*', '').replace('"', '').replace('<', '').replace('>', '').replace('|', '').replace('\\', '')
     
     if channel == "blog":
         # Save as markdown
