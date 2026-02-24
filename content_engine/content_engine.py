@@ -188,13 +188,13 @@ def save_output(channel: str, content: dict, output_dir: Path, brief: dict):
             md = f"# {content.get('title', '')}\n\n"
             md += f"*Meta: {content.get('meta_description', '')}*\n\n"
             md += content["content"]
-            filepath.write_text(md)
+            filepath.write_text(md, encoding="utf-8")
         else:
-            filepath.write_text(content.get("raw", str(content)))
+            filepath.write_text(content.get("raw", str(content)), encoding="utf-8")
     else:
         # Save as JSON
         filepath = output_dir / f"{channel}_{slug}_{timestamp}.json"
-        filepath.write_text(json.dumps(content, indent=2))
+        filepath.write_text(json.dumps(content, indent=2), encoding="utf-8")
     
     return filepath
 
