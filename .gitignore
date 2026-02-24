@@ -1,0 +1,25 @@
+# From the root affiliate-ops/ folder
+cat > .gitignore << 'EOF'
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Generated content (too large for git, use artifacts storage instead)
+output/
+logs/
+
+# Node
+node_modules/
+dashboard/dist/
+dashboard/.env
+
+# API keys (never commit these)
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+EOF

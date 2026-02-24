@@ -1,0 +1,36 @@
+mkdir -p .github/workflows
+cat > .github/workflows/content.yml << 'EOF'
+name: Weekly Content Generation
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # Every Monday 9am UTC
+  workflow_dispatch:        # Manual trigger from GitHub UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic rich
+
+      - name: Generate Tier 1 content
+        run: python scheduler.py
+        working-directory: content_engine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload generated content
+        uses: actions/upload-artifact@v3
+        with:
+          name: weekly-content-${{ github.run_number }}
+          path: content_engine/output/
+          retention-days: 30
+EOF
