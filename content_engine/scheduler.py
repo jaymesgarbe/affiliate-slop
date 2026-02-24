@@ -28,6 +28,10 @@ LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / "scheduler.log"
 
+# ── Site config ──────────────────────────────────────────────────────────────
+BLOG_URL = "https://jaymesinthestack.hashnode.dev"
+BLOG_PLATFORM = "hashnode"
+
 # ── Affiliate registry ────────────────────────────────────────────────────────
 AFFILIATES = {
     "AI/ML API": {

@@ -43,6 +43,8 @@ CHANNEL_PROMPTS = {
 Affiliate product to naturally integrate: {affiliate} ({affiliate_url})
 Commission note (internal only, don't mention): {commission}
 Target audience: {audience}
+Blog canonical URL: https://jaymesinthestack.hashnode.dev
+Author: Jaymes (Berkeley EECS grad, developer tools & AI/ML infrastructure)
 
 Requirements:
 - Title with primary keyword
@@ -52,8 +54,9 @@ Requirements:
 - Include a comparison table if relevant
 - 2-3 natural affiliate link placements with anchor text
 - Include "Affiliate disclosure: This post contains affiliate links..." at the top
-- End with a clear CTA
+- End with a clear CTA linking back to jaymesinthestack.hashnode.dev
 - Tone: authoritative but approachable, like a senior engineer sharing what they learned
+- Write in first person — this is a personal blog, not a content farm
 
 Output as JSON with keys: title, meta_description, content (full markdown)""",
 
