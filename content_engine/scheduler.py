@@ -108,17 +108,17 @@ def run_topic(topic: dict) -> bool:
         "--output-dir",    f"output/{topic['slug']}"
     ]
 
-    log(f"▶ Starting: [Tier {topic.get('tier','?')}] {topic['slug']}")
+    log(f">> Starting: [Tier {topic.get('tier','?')}] {topic['slug']}")
     if topic.get("notes"):
         log(f"  Strategy: {topic['notes']}")
 
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=Path(__file__).parent)
 
     if result.returncode == 0:
-        log(f"✓ Done: {topic['slug']}")
+        log(f"OK Done: {topic['slug']}")
         return True
     else:
-        log(f"✗ Failed: {topic['slug']}")
+        log(f"XX Failed: {topic['slug']}")
         log(f"  Error: {result.stderr[-300:] if result.stderr else 'no output'}")
         return False
 
@@ -137,7 +137,7 @@ def list_topics(topics: list, tier: int = None):
         print(f"\n  📦 {affiliate}  [{info.get('commission','?')}]")
         print(f"     Sign up: {info.get('signup', 'N/A')}")
         for t in tops:
-            status = "✓ scheduled" if t.get("scheduled") else "  paused"
+            status = "* scheduled" if t.get("scheduled") else "  paused"
             print(f"     [Tier {t.get('tier','?')}] {status}  {t['slug']}")
             print(f"          \"{t['topic'][:72]}{'...' if len(t['topic'])>72 else ''}\"")
     print(f"\n  Total: {len(filtered)} topics\n")

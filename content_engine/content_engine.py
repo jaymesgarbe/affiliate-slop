@@ -275,7 +275,7 @@ def main():
         f"Topic: [cyan]{args.topic}[/cyan]\n"
         f"Affiliate: [yellow]{args.affiliate}[/yellow]\n"
         f"Channels: [magenta]{', '.join(args.channels)}[/magenta]",
-        title="🚀 Content Generation"
+        title=">> Content Generation"
     ))
 
     results = {}
@@ -293,9 +293,9 @@ def main():
                 results[channel] = content
                 filepath = save_output(channel, content, output_dir, brief)
                 saved_files.append((channel, filepath))
-                progress.update(task, description=f"[green]✓[/green] {channel.replace('_', ' ')}")
+                progress.update(task, description=f"[green]OK[/green] {channel.replace('_', ' ')}")
             except Exception as e:
-                progress.update(task, description=f"[red]✗[/red] {channel}: {e}")
+                progress.update(task, description=f"[red]XX[/red] {channel}: {e}")
                 results[channel] = {"error": str(e)}
             progress.stop_task(task)
 
@@ -312,7 +312,7 @@ def main():
     for channel, filepath in saved_files:
         table.add_row(channel.replace("_", " ").title(), str(filepath))
     console.print(table)
-    console.print(f"\n[bold green]✓ Done! All content saved to {output_dir}/[/bold green]")
+    console.print(f"\n[bold green]OK Done! All content saved to {output_dir}/[/bold green]")
 
 
 if __name__ == "__main__":
