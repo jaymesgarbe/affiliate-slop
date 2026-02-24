@@ -156,7 +156,7 @@ def generate_content(channel: str, brief: dict) -> dict:
     prompt = CHANNEL_PROMPTS[channel].format(**brief)
     
     message = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-sonnet-4-6",
         max_tokens=4096,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}]
