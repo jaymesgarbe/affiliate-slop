@@ -28,47 +28,37 @@ LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR / "scheduler.log"
 
-# ── Affiliate registry: swap YOUR_ID for real affiliate IDs ──────────────────
+# ── Affiliate registry ────────────────────────────────────────────────────────
 AFFILIATES = {
     "AI/ML API": {
-        "url": "https://aimlapi.com/?ref=YOUR_ID",
+        "url": "https://aimlapi.com/?via=jaymes",
         "commission": "30% recurring forever",
         "signup": "https://aimlapi.com/affiliate-program"
     },
-    "Bannerbear": {
-        "url": "https://www.bannerbear.com/affiliate/?ref=YOUR_ID",
-        "commission": "30% recurring forever",
-        "signup": "https://www.bannerbear.com/affiliate/"
-    },
     "Feather": {
-        "url": "https://feather.so/?ref=YOUR_ID",
+        "url": "https://feather.so/?via=jaymes",
         "commission": "25% recurring forever",
         "signup": "https://feather.getrewardful.com/"
     },
-    "Keygen": {
-        "url": "https://keygen.sh/?ref=YOUR_ID",
-        "commission": "30% recurring forever",
-        "signup": "https://keygen.sh/affiliates/"
+    "Railway": {
+        "url": "https://railway.com?referralCode=tIqKm6",
+        "commission": "20 credits per referral",
+        "signup": "https://railway.com/referral"
     },
-    "Serply.io": {
-        "url": "https://serply.io/?ref=YOUR_ID",
-        "commission": "25% recurring forever",
-        "signup": "https://affiliates.reflio.com/invite/serply"
-    },
-    "NeuralText": {
-        "url": "https://neuraltext.com/?ref=YOUR_ID",
-        "commission": "30% recurring forever",
-        "signup": "https://neuraltext.getrewardful.com/signup"
-    },
-    "Compint": {
-        "url": "https://compint.io/?ref=YOUR_ID",
-        "commission": "25% recurring forever",
-        "signup": "https://compint.lemonsqueezy.com/affiliates"
+    "SearchApi": {
+        "url": "https://www.searchapi.io/?via=jaymes",
+        "commission": "30% recurring for 12 months",
+        "signup": "https://www.searchapi.io/affiliate-program"
     },
     "Instatus": {
-        "url": "https://instatus.com/?ref=YOUR_ID",
+        "url": "https://instatus.com?via=jaymes",
         "commission": "30% recurring forever",
         "signup": "https://instatus.com/affiliates"
+    },
+    "Apify": {
+        "url": "PENDING",
+        "commission": "20% months 1-3, 30% recurring forever after",
+        "signup": "https://affiliate.apify.com/"
     },
 }
 # ─────────────────────────────────────────────────────────────────────────────
@@ -87,8 +77,12 @@ def run_topic(topic: dict) -> bool:
     affiliate_info = AFFILIATES.get(affiliate_name, {})
 
     affiliate_url = topic.get("affiliate_url", "")
-    if "YOUR_ID" in affiliate_url and affiliate_info.get("url"):
+    if ("YOUR_ID" in affiliate_url or affiliate_url == "") and affiliate_info.get("url"):
         affiliate_url = affiliate_info["url"]
+
+    if affiliate_url == "PENDING":
+        log(f"⚠ Skipping {topic['slug']} — {affiliate_name} affiliate link is still pending approval.")
+        return False
 
     cmd = [
         sys.executable, "content_engine.py",
@@ -170,28 +164,30 @@ def main():
         log("No topics matched. Use --list to see available topics.")
         return
 
-    # Warn about unregistered IDs
-    unregistered = {
+    # Warn about pending affiliates
+    pending = {
         t["affiliate"] for t in to_run
-        if "YOUR_ID" in AFFILIATES.get(t["affiliate"], {}).get("url", "")
+        if AFFILIATES.get(t["affiliate"], {}).get("url") == "PENDING"
     }
-    if unregistered:
-        log("⚠️  Affiliates with placeholder IDs (sign up first):")
-        for a in sorted(unregistered):
+    if pending:
+        log("⚠️  Affiliates with pending approval (will be skipped):")
+        for a in sorted(pending):
             log(f"   → {a}: {AFFILIATES[a]['signup']}")
-        log("   Content will generate but links won't track revenue.\n")
 
     log(f"Starting batch: {len(to_run)} topics")
-    success, failed = 0, 0
+    success, failed, skipped = 0, 0, 0
 
     for topic in to_run:
-        if run_topic(topic):
+        result = run_topic(topic)
+        if result:
             success += 1
+        elif AFFILIATES.get(topic["affiliate"], {}).get("url") == "PENDING":
+            skipped += 1
         else:
             failed += 1
 
     log(f"{'─'*50}")
-    log(f"Batch complete: {success} succeeded, {failed} failed")
+    log(f"Batch complete: {success} succeeded, {failed} failed, {skipped} skipped (pending)")
     log(f"Output saved to: output/")
 
 

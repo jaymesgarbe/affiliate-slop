@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 const AFFILIATES_DEFAULT = [
-  { id: "aimlapi", name: "AI/ML API", url: "https://aimlapi.com/?ref=YOUR_ID", signup: "https://aimlapi.com/affiliate-program", commission: "30%", type: "recurring ∞", niche: "LLM APIs", clicks: 0, conversions: 0, revenue: 0, active: true },
-  { id: "bannerbear", name: "Bannerbear", url: "https://www.bannerbear.com/affiliate/?ref=YOUR_ID", signup: "https://www.bannerbear.com/affiliate/", commission: "30%", type: "recurring ∞", niche: "Dev Automation", clicks: 0, conversions: 0, revenue: 0, active: true },
-  { id: "feather", name: "Feather", url: "https://feather.so/?ref=YOUR_ID", signup: "https://feather.getrewardful.com/", commission: "25%", type: "recurring ∞", niche: "Dev Blogging", clicks: 0, conversions: 0, revenue: 0, active: true },
-  { id: "keygen", name: "Keygen", url: "https://keygen.sh/?ref=YOUR_ID", signup: "https://keygen.sh/affiliates/", commission: "30%", type: "recurring ∞", niche: "SW Licensing", clicks: 0, conversions: 0, revenue: 0, active: true },
-  { id: "serply", name: "Serply.io", url: "https://serply.io/?ref=YOUR_ID", signup: "https://affiliates.reflio.com/invite/serply", commission: "25%", type: "recurring ∞", niche: "SERP APIs", clicks: 0, conversions: 0, revenue: 0, active: true },
-  { id: "neuraltext", name: "NeuralText", url: "https://neuraltext.com/?ref=YOUR_ID", signup: "https://neuraltext.getrewardful.com/signup", commission: "30%", type: "recurring ∞", niche: "AI Content", clicks: 0, conversions: 0, revenue: 0, active: false },
-  { id: "compint", name: "Compint", url: "https://compint.io/?ref=YOUR_ID", signup: "https://compint.lemonsqueezy.com/affiliates", commission: "25%", type: "recurring ∞", niche: "Competitor Intel", clicks: 0, conversions: 0, revenue: 0, active: false },
-  { id: "instatus", name: "Instatus", url: "https://instatus.com/?ref=YOUR_ID", signup: "https://instatus.com/affiliates", commission: "30%", type: "recurring ∞", niche: "Status Pages", clicks: 0, conversions: 0, revenue: 0, active: false },
+  { id: "aimlapi", name: "AI/ML API", url: "https://aimlapi.com/?via=jaymes", signup: "https://aimlapi.com/affiliate-program", commission: "30%", type: "recurring ∞", niche: "LLM APIs", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
+  { id: "feather", name: "Feather", url: "https://feather.so/?via=jaymes", signup: "https://feather.getrewardful.com/", commission: "25%", type: "recurring ∞", niche: "Dev Blogging", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
+  { id: "railway", name: "Railway", url: "https://railway.com?referralCode=tIqKm6", signup: "https://railway.com/referral", commission: "20 credits", type: "per referral", niche: "App Deployment", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
+  { id: "searchapi", name: "SearchApi", url: "https://www.searchapi.io/?via=jaymes", signup: "https://www.searchapi.io/affiliate-program", commission: "30%", type: "recurring 12mo", niche: "SERP APIs", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
+  { id: "instatus", name: "Instatus", url: "https://instatus.com?via=jaymes", signup: "https://instatus.com/affiliates", commission: "30%", type: "recurring ∞", niche: "Status Pages", clicks: 0, conversions: 0, revenue: 0, active: true, status: "active" },
+  { id: "apify", name: "Apify", url: "PENDING", signup: "https://affiliate.apify.com/", commission: "30%", type: "recurring ∞", niche: "Web Scraping", clicks: 0, conversions: 0, revenue: 0, active: false, status: "pending" },
 ];
 
 const SOCIALS_DEFAULT = [
@@ -26,16 +24,18 @@ const REVENUE_DEFAULT = [
 ];
 
 const TASKS_DEFAULT = [
-  { id: 1, text: "Sign up for AI/ML API affiliate program", done: false, priority: "high" },
-  { id: 2, text: "Sign up for Bannerbear affiliate program", done: false, priority: "high" },
-  { id: 3, text: "Sign up for Feather affiliate program", done: false, priority: "high" },
-  { id: 4, text: "Sign up for Keygen affiliate program", done: false, priority: "high" },
-  { id: 5, text: "Sign up for Serply.io affiliate program", done: false, priority: "high" },
-  { id: 6, text: "Replace YOUR_ID in scheduler.py with real affiliate IDs", done: false, priority: "high" },
+  { id: 1, text: "Sign up for AI/ML API affiliate program", done: true, priority: "high" },
+  { id: 2, text: "Sign up for Feather affiliate program", done: true, priority: "high" },
+  { id: 3, text: "Sign up for Railway affiliate program", done: true, priority: "high" },
+  { id: 4, text: "Sign up for SearchApi affiliate program", done: true, priority: "high" },
+  { id: 5, text: "Sign up for Instatus affiliate program", done: true, priority: "high" },
+  { id: 6, text: "Awaiting Apify affiliate approval", done: false, priority: "high" },
   { id: 7, text: "Set up blog (Ghost or Feather)", done: false, priority: "medium" },
   { id: 8, text: "Set up newsletter (Beehiiv)", done: false, priority: "medium" },
-  { id: 9, text: "Run first content generation: aimlapi-llm-comparison", done: false, priority: "medium" },
-  { id: 10, text: "Publish first blog post", done: false, priority: "medium" },
+  { id: 9, text: "Add Anthropic API key to GitHub secrets", done: true, priority: "medium" },
+  { id: 10, text: "Run first content generation: aimlapi-llm-comparison", done: false, priority: "medium" },
+  { id: 11, text: "Publish first blog post", done: false, priority: "medium" },
+  { id: 12, text: "Update Apify affiliate_url in topics.json once approved", done: false, priority: "medium" },
 ];
 
 function StatCard({ label, value, sub, accent = "#00ff87", trend }) {
@@ -104,17 +104,16 @@ export default function Dashboard() {
   const [addingAff, setAddingAff] = useState(false);
   const [newAff, setNewAff] = useState({ name: "", url: "", commission: "", type: "recurring ∞", niche: "", clicks: 0, conversions: 0, revenue: 0 });
 
-  // Load from storage
   useEffect(() => {
     async function load() {
       try {
-        const r1 = await window.storage.get("affiliates");
+        const r1 = await window.storage.get("affiliates_v2");
         if (r1) setAffiliates(JSON.parse(r1.value));
         const r2 = await window.storage.get("socials");
         if (r2) setSocials(JSON.parse(r2.value));
         const r3 = await window.storage.get("revenueData");
         if (r3) setRevenueData(JSON.parse(r3.value));
-        const r4 = await window.storage.get("tasks");
+        const r4 = await window.storage.get("tasks_v2");
         if (r4) setTasks(JSON.parse(r4.value));
       } catch (e) {}
       setLoaded(true);
@@ -126,16 +125,17 @@ export default function Dashboard() {
     try { await window.storage.set(key, JSON.stringify(data)); } catch (e) {}
   }, []);
 
-  const updateAffiliates = (data) => { setAffiliates(data); save("affiliates", data); };
+  const updateAffiliates = (data) => { setAffiliates(data); save("affiliates_v2", data); };
   const updateSocials = (data) => { setSocials(data); save("socials", data); };
   const updateRevenue = (data) => { setRevenueData(data); save("revenueData", data); };
-  const updateTasks = (data) => { setTasks(data); save("tasks", data); };
+  const updateTasks = (data) => { setTasks(data); save("tasks_v2", data); };
 
-  const totalRevenue = affiliates.reduce((s, a) => s + (a.revenue || 0), 0);
+  const activeAffiliates = affiliates.filter(a => a.status === "active");
+  const totalRevenue = activeAffiliates.reduce((s, a) => s + (a.revenue || 0), 0);
   const totalClicks = affiliates.reduce((s, a) => s + (a.clicks || 0), 0);
   const totalConversions = affiliates.reduce((s, a) => s + (a.conversions || 0), 0);
   const convRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(1) : "0.0";
-  const topAffiliate = [...affiliates].sort((a, b) => b.revenue - a.revenue)[0];
+  const topAffiliate = [...activeAffiliates].sort((a, b) => b.revenue - a.revenue)[0];
   const tasksDone = tasks.filter(t => t.done).length;
 
   const TABS = ["overview", "affiliates", "content", "tasks"];
@@ -191,7 +191,6 @@ export default function Dashboard() {
           {/* ── OVERVIEW TAB ── */}
           {tab === "overview" && (
             <div>
-              {/* Stat Cards */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
                 <StatCard label="Monthly Revenue" value={`$${totalRevenue.toFixed(2)}`} sub="recurring affiliate commissions" accent="#00ff87" />
                 <StatCard label="Total Clicks" value={totalClicks.toLocaleString()} sub="across all affiliate links" accent="#38bdf8" />
@@ -199,7 +198,6 @@ export default function Dashboard() {
                 <StatCard label="Top Performer" value={topAffiliate?.name || "—"} sub={topAffiliate ? `$${topAffiliate.revenue.toFixed(2)}/mo` : "no data yet"} accent="#fb923c" />
               </div>
 
-              {/* Revenue Chart + Social Endpoints */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, marginBottom: 28 }}>
                 <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "24px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -225,15 +223,13 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Social Endpoints */}
                 <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: "24px" }}>
                   <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0", marginBottom: 4 }}>Social Endpoints</div>
                   <div style={{ fontSize: 11, color: "#4a6079", marginBottom: 16 }}>Click any to edit</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {socials.map(s => (
                       <div key={s.id} className="social-card" onClick={() => setEditSocial({ ...s })} style={{
-                        border: `1px solid ${s.url ? "#1e2a38" : "#1e2a38"}`, borderRadius: 10, padding: "12px 14px",
-                        cursor: "pointer", background: "#080c12"
+                        border: "1px solid #1e2a38", borderRadius: 10, padding: "12px 14px", cursor: "pointer", background: "#080c12"
                       }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -281,20 +277,25 @@ export default function Dashboard() {
                     {affiliates.map(a => (
                       <tr key={a.id} className="aff-row" onClick={() => setEditAffiliate({ ...a })} style={{ borderBottom: "1px solid #0d1117", cursor: "pointer" }}>
                         <td style={{ padding: "12px 16px" }}>
-                          <div style={{ fontWeight: 700, fontSize: 13, color: "#e2e8f0" }}>{a.name}</div>
-                          <div style={{ fontSize: 10, color: "#2d3748", marginTop: 2 }}>{a.url.replace("https://", "").split("?")[0]}</div>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: a.status === "pending" ? "#64748b" : "#e2e8f0" }}>{a.name}</div>
+                          <div style={{ fontSize: 10, color: "#2d3748", marginTop: 2 }}>
+                            {a.url === "PENDING" ? "awaiting approval" : a.url.replace("https://", "").split("?")[0]}
+                          </div>
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 11, color: "#64748b" }}>{a.niche}</td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span style={{ color: "#00ff87", fontSize: 13, fontWeight: 700 }}>{a.commission}</span>
+                          <span style={{ color: a.status === "pending" ? "#64748b" : "#00ff87", fontSize: 13, fontWeight: 700 }}>{a.commission}</span>
                           <span style={{ fontSize: 10, color: "#4a6079", marginLeft: 4 }}>{a.type}</span>
                         </td>
                         <td style={{ padding: "12px 16px", fontSize: 13, color: "#38bdf8" }}>{a.clicks.toLocaleString()}</td>
                         <td style={{ padding: "12px 16px", fontSize: 13, color: "#a78bfa" }}>{a.conversions}</td>
                         <td style={{ padding: "12px 16px", fontSize: 13, color: "#fb923c", fontWeight: 700 }}>${a.revenue.toFixed(2)}</td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span className="pill" style={{ background: a.active ? "#00ff8718" : "#1e2a38", color: a.active ? "#00ff87" : "#4a6079" }}>
-                            {a.active ? "tier 1" : "tier 2"}
+                          <span className="pill" style={{
+                            background: a.status === "pending" ? "#fb923c18" : "#00ff8718",
+                            color: a.status === "pending" ? "#fb923c" : "#00ff87"
+                          }}>
+                            {a.status === "pending" ? "pending" : "active"}
                           </span>
                         </td>
                       </tr>
@@ -316,7 +317,6 @@ export default function Dashboard() {
                 <Btn onClick={() => setAddingAff(true)}>+ Add Program</Btn>
               </div>
 
-              {/* Revenue bar chart */}
               <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 24, marginBottom: 20 }}>
                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, color: "#e2e8f0", marginBottom: 16 }}>Revenue by Program</div>
                 <ResponsiveContainer width="100%" height={160}>
@@ -331,16 +331,19 @@ export default function Dashboard() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
                 {affiliates.map(a => (
-                  <div key={a.id} style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 20, position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: a.active ? "linear-gradient(90deg, #00ff8720, #00ff87, #00ff8720)" : "linear-gradient(90deg, #1e2a38, #2d3748, #1e2a38)" }} />
+                  <div key={a.id} style={{ background: "#0d1117", border: `1px solid ${a.status === "pending" ? "#fb923c30" : "#1e2a38"}`, borderRadius: 12, padding: 20, position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: a.status === "pending" ? "linear-gradient(90deg, #fb923c20, #fb923c, #fb923c20)" : "linear-gradient(90deg, #00ff8720, #00ff87, #00ff8720)" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                       <div>
-                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: "#e2e8f0" }}>{a.name}</div>
+                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: a.status === "pending" ? "#64748b" : "#e2e8f0" }}>{a.name}</div>
                         <div style={{ fontSize: 11, color: "#4a6079", marginTop: 2 }}>{a.niche}</div>
                       </div>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <span className="pill" style={{ background: a.active ? "#00ff8718" : "#1e2a38", color: a.active ? "#00ff87" : "#4a6079" }}>
-                          {a.active ? "tier 1" : "tier 2"}
+                        <span className="pill" style={{
+                          background: a.status === "pending" ? "#fb923c18" : "#00ff8718",
+                          color: a.status === "pending" ? "#fb923c" : "#00ff87"
+                        }}>
+                          {a.status === "pending" ? "⏳ pending" : "active"}
                         </span>
                         <button onClick={() => setEditAffiliate({ ...a })} style={{ background: "#161b22", border: "1px solid #1e2a38", borderRadius: 6, padding: "4px 10px", color: "#4a6079", fontSize: 11, cursor: "pointer" }}>Edit</button>
                       </div>
@@ -361,16 +364,16 @@ export default function Dashboard() {
 
                     <div style={{ background: "#080c12", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
                       <div style={{ fontSize: 10, color: "#4a6079", marginBottom: 4 }}>Commission</div>
-                      <div style={{ fontSize: 14, color: "#00ff87", fontWeight: 700 }}>{a.commission} <span style={{ fontSize: 10, color: "#4a6079" }}>{a.type}</span></div>
+                      <div style={{ fontSize: 14, color: a.status === "pending" ? "#64748b" : "#00ff87", fontWeight: 700 }}>{a.commission} <span style={{ fontSize: 10, color: "#4a6079" }}>{a.type}</span></div>
                     </div>
 
                     <div style={{ background: "#080c12", borderRadius: 8, padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ fontSize: 10, color: "#4a6079", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, marginRight: 8 }}>
-                        {a.url.includes("YOUR_ID") ? <span style={{ color: "#f87171" }}>⚠ Replace YOUR_ID</span> : a.url}
+                        {a.url === "PENDING"
+                          ? <span style={{ color: "#fb923c" }}>⏳ Awaiting approval</span>
+                          : a.url}
                       </div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <a href={a.signup} target="_blank" style={{ fontSize: 10, color: "#38bdf8", textDecoration: "none", whiteSpace: "nowrap" }}>sign up ↗</a>
-                      </div>
+                      <a href={a.signup} target="_blank" style={{ fontSize: 10, color: "#38bdf8", textDecoration: "none", whiteSpace: "nowrap" }}>dashboard ↗</a>
                     </div>
                   </div>
                 ))}
@@ -388,7 +391,7 @@ export default function Dashboard() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
                 {socials.map(s => (
-                  <div key={s.id} className="social-card" onClick={() => setEditSocial({ ...s })} style={{ background: "#0d1117", border: `1px solid #1e2a38`, borderRadius: 12, padding: 20, cursor: "pointer" }}>
+                  <div key={s.id} className="social-card" onClick={() => setEditSocial({ ...s })} style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 20, cursor: "pointer" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: s.color }}>{s.icon}</div>
@@ -403,7 +406,6 @@ export default function Dashboard() {
                         <span style={{ fontSize: 10, color: "#2d3748" }}>not set</span>
                       )}
                     </div>
-
                     <div style={{ borderTop: "1px solid #1e2a38", paddingTop: 14 }}>
                       <div style={{ fontSize: 10, color: "#4a6079", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>Latest Entry</div>
                       {s.lastEntry ? (
@@ -419,7 +421,6 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              {/* Content pipeline status */}
               <div style={{ background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 12, padding: 24 }}>
                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15, color: "#e2e8f0", marginBottom: 16 }}>Content Pipeline</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
@@ -451,13 +452,12 @@ export default function Dashboard() {
                   <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 22, color: "#e2e8f0" }}>Task Queue</div>
                   <div style={{ fontSize: 11, color: "#4a6079", marginTop: 4 }}>{tasksDone}/{tasks.length} completed</div>
                 </div>
-                <div style={{ display: "flex", gap: 4, background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, padding: 4 }}>
+                <div style={{ display: "flex", gap: 4, background: "#0d1117", border: "1px solid #1e2a38", borderRadius: 8, padding: 4, alignItems: "center" }}>
                   <div style={{ height: 8, borderRadius: 4, background: "#00ff87", width: `${tasks.length > 0 ? (tasksDone / tasks.length) * 200 : 0}px`, transition: "width 0.3s", minWidth: 4 }} />
                   <div style={{ height: 8, borderRadius: 4, background: "#1e2a38", flex: 1 }} />
                 </div>
               </div>
 
-              {/* Add task */}
               <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                 <input value={newTask} onChange={e => setNewTask(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && newTask.trim()) { const t = [...tasks, { id: Date.now(), text: newTask.trim(), done: false, priority: "medium" }]; updateTasks(t); setNewTask(""); }}}
@@ -493,21 +493,19 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* ── MODALS ── */}
-
-        {/* Edit Affiliate */}
+        {/* MODALS */}
         <Modal open={!!editAffiliate} onClose={() => setEditAffiliate(null)} title={editAffiliate ? `Edit: ${editAffiliate.name}` : ""}>
           {editAffiliate && (
             <>
               <Input label="Affiliate URL (your referral link)" value={editAffiliate.url} onChange={v => setEditAffiliate({ ...editAffiliate, url: v })} placeholder="https://..." />
-              <Input label="Clicks (manual or from dashboard)" value={editAffiliate.clicks} onChange={v => setEditAffiliate({ ...editAffiliate, clicks: parseInt(v) || 0 })} type="number" />
+              <Input label="Clicks" value={editAffiliate.clicks} onChange={v => setEditAffiliate({ ...editAffiliate, clicks: parseInt(v) || 0 })} type="number" />
               <Input label="Conversions" value={editAffiliate.conversions} onChange={v => setEditAffiliate({ ...editAffiliate, conversions: parseInt(v) || 0 })} type="number" />
               <Input label="Monthly Revenue ($)" value={editAffiliate.revenue} onChange={v => setEditAffiliate({ ...editAffiliate, revenue: parseFloat(v) || 0 })} type="number" />
-              <Input label="Commission %" value={editAffiliate.commission} onChange={v => setEditAffiliate({ ...editAffiliate, commission: v })} placeholder="30%" />
+              <Input label="Commission" value={editAffiliate.commission} onChange={v => setEditAffiliate({ ...editAffiliate, commission: v })} placeholder="30%" />
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 20 }}>
                 <label style={{ fontSize: 12, color: "#e2e8f0" }}>
-                  <input type="checkbox" checked={editAffiliate.active} onChange={e => setEditAffiliate({ ...editAffiliate, active: e.target.checked })} style={{ marginRight: 8 }} />
-                  Tier 1 (active)
+                  <input type="checkbox" checked={editAffiliate.status === "active"} onChange={e => setEditAffiliate({ ...editAffiliate, status: e.target.checked ? "active" : "pending" })} style={{ marginRight: 8 }} />
+                  Mark as active (approved)
                 </label>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -518,7 +516,6 @@ export default function Dashboard() {
           )}
         </Modal>
 
-        {/* Add Affiliate */}
         <Modal open={addingAff} onClose={() => setAddingAff(false)} title="Add Affiliate Program">
           <Input label="Program Name" value={newAff.name} onChange={v => setNewAff({ ...newAff, name: v })} placeholder="e.g. Vercel" />
           <Input label="Your Referral URL" value={newAff.url} onChange={v => setNewAff({ ...newAff, url: v })} placeholder="https://vercel.com/?ref=..." />
@@ -526,14 +523,13 @@ export default function Dashboard() {
           <Input label="Niche / Category" value={newAff.niche} onChange={v => setNewAff({ ...newAff, niche: v })} placeholder="e.g. Cloud Hosting" />
           <Btn onClick={() => {
             if (!newAff.name) return;
-            const a = { ...newAff, id: newAff.name.toLowerCase().replace(/\s/g, "-"), active: true };
+            const a = { ...newAff, id: newAff.name.toLowerCase().replace(/\s/g, "-"), active: true, status: "active" };
             updateAffiliates([...affiliates, a]);
             setNewAff({ name: "", url: "", commission: "", type: "recurring ∞", niche: "", clicks: 0, conversions: 0, revenue: 0 });
             setAddingAff(false);
           }}>Add Program</Btn>
         </Modal>
 
-        {/* Edit Social */}
         <Modal open={!!editSocial} onClose={() => setEditSocial(null)} title={editSocial ? `Edit: ${editSocial.name}` : ""}>
           {editSocial && (
             <>
@@ -545,7 +541,6 @@ export default function Dashboard() {
           )}
         </Modal>
 
-        {/* Edit Revenue */}
         <Modal open={editRevenue} onClose={() => setEditRevenue(false)} title="Edit Monthly Revenue">
           {revenueData.map((r, i) => (
             <Input key={r.month} label={r.month} value={r.revenue} type="number"
