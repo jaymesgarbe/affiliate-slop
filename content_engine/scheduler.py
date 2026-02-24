@@ -112,7 +112,7 @@ def run_topic(topic: dict) -> bool:
     if topic.get("notes"):
         log(f"  Strategy: {topic['notes']}")
 
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=Path(__file__).parent)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=Path(__file__).parent)
 
     if result.returncode == 0:
         log(f"OK Done: {topic['slug']}")
