@@ -22,7 +22,6 @@ GitHub Actions: see .github/workflows/content.yml
 
 import argparse
 import json
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -97,29 +96,39 @@ def run_topic(topic: dict) -> bool:
         log(f"⚠ Skipping {topic['slug']} — {affiliate_name} affiliate link is still pending approval.")
         return False
 
-    cmd = [
-        sys.executable, "content_engine.py",
-        "--topic",         topic["topic"],
-        "--affiliate",     affiliate_name,
-        "--affiliate-url", affiliate_url,
-        "--commission",    topic.get("commission", affiliate_info.get("commission", "recurring")),
-        "--audience",      topic.get("audience", "developers and technical professionals"),
-        "--channels",      *topic.get("channels", ["blog", "newsletter", "twitter_thread"]),
-        "--output-dir",    f"output/{topic['slug']}"
-    ]
-
     log(f">> Starting: [Tier {topic.get('tier','?')}] {topic['slug']}")
     if topic.get("notes"):
         log(f"  Strategy: {topic['notes']}")
 
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=Path(__file__).parent)
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).parent))
+        from content_engine import generate_content, save_output, CHANNELS
+        from pathlib import Path as _Path
 
-    if result.returncode == 0:
+        brief = {
+            "topic":         topic["topic"],
+            "affiliate":     affiliate_name,
+            "affiliate_url": affiliate_url,
+            "commission":    topic.get("commission", affiliate_info.get("commission", "recurring")),
+            "audience":      topic.get("audience", "developers and technical professionals"),
+        }
+
+        channels = topic.get("channels", ["blog", "newsletter", "twitter_thread"])
+        output_dir = _Path("output") / topic["slug"]
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        for channel in channels:
+            log(f"  Generating {channel}...")
+            result = generate_content(channel, brief)
+            filepath = save_output(channel, result, output_dir, brief)
+            log(f"  Saved: {filepath}")
+
         log(f"OK Done: {topic['slug']}")
         return True
-    else:
+    except Exception as e:
         log(f"XX Failed: {topic['slug']}")
-        log(f"  Error: {result.stderr[-300:] if result.stderr else 'no output'}")
+        log(f"  Error: {e}")
         return False
 
 
