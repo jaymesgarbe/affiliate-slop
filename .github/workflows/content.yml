@@ -1,11 +1,9 @@
-mkdir -p .github/workflows
-cat > .github/workflows/content.yml << 'EOF'
 name: Weekly Content Generation
 
 on:
   schedule:
-    - cron: '0 9 * * 1'   # Every Monday 9am UTC
-  workflow_dispatch:        # Manual trigger from GitHub UI
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
 
 jobs:
   generate:
@@ -33,4 +31,3 @@ jobs:
           name: weekly-content-${{ github.run_number }}
           path: content_engine/output/
           retention-days: 30
-EOF

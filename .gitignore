@@ -1,12 +1,10 @@
-# From the root affiliate-ops/ folder
-cat > .gitignore << 'EOF'
 # Python
 venv/
 __pycache__/
 *.pyc
 .env
 
-# Generated content (too large for git, use artifacts storage instead)
+# Generated content
 output/
 logs/
 
@@ -15,11 +13,10 @@ node_modules/
 dashboard/dist/
 dashboard/.env
 
-# API keys (never commit these)
+# API keys
 .env
 *.env
 
 # OS
 .DS_Store
 Thumbs.db
-EOF
