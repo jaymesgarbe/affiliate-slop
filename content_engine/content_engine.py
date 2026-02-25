@@ -35,7 +35,8 @@ client = anthropic.Anthropic()  # uses ANTHROPIC_API_KEY env var
 SYSTEM_PROMPT = """You are an expert content strategist and copywriter specializing in 
 technical SaaS affiliate marketing. You create authentic, value-first content that earns 
 trust with developer and technical audiences. You never sound spammy or salesy — you 
-educate first, promote second. Always include FTC-compliant affiliate disclosures where appropriate."""
+educate first, promote second. Always include FTC-compliant affiliate disclosures where appropriate.
+IMPORTANT: The current year is 2026. Always reference 2026 (not 2025) when writing about current tools, pricing, benchmarks, or trends."""
 
 CHANNEL_PROMPTS = {
     "blog": """Write a detailed, SEO-optimized blog post comparing/covering: {topic}
@@ -118,16 +119,19 @@ Output as JSON with keys: pin_title, pin_description, keywords, board_suggestion
 
 Affiliate product to mention: {affiliate} ({affiliate_url})
 Target audience: {audience}
+Current year: 2026
 
 Requirements:
 - 8-12 tweets
 - Hook tweet that makes people stop scrolling
 - Each tweet standalone but builds on previous
 - 1 natural affiliate mention mid-thread (not the last tweet)
-- Last tweet: engagement CTA (retweet, follow, etc.)
-- Include "(🧵 thread)" in first tweet
+- Last tweet: engagement CTA ending with #buildinpublic — NO other hashtags anywhere in the thread
+- Include "(thread)" in first tweet — NO emoji
+- CRITICAL: Every single tweet MUST be 280 characters or fewer including spaces. Count carefully.
+- Write like a real senior engineer sharing genuine insights, not a marketer
 
-Output as JSON with keys: tweets (array of strings, each under 280 chars)""",
+Output as JSON with keys: tweets (array of strings, each STRICTLY under 280 chars)""",
 
     "ad_copy": """Write paid ad copy for promoting: {topic} via {affiliate}
 
@@ -176,26 +180,116 @@ def generate_content(channel: str, brief: dict) -> dict:
     return {"raw": raw}
 
 
+def _generate_benchmark_html(content: dict, brief: dict, output_path: Path):
+    """Generate a branded benchmark table HTML graphic for tweet #1."""
+    topic = brief.get("topic", "Comparison")
+    affiliate = brief.get("affiliate", "")
+    
+    # Extract any comparison table data from tweets
+    tweets = content.get("tweets", [])
+    
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ background: #0a0a0f; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'JetBrains Mono', monospace; padding: 40px; }}
+  .card {{ width: 860px; background: #0e0e16; border: 1px solid #1e1e2e; border-radius: 16px; overflow: hidden; position: relative; }}
+  .card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #00ff87, #00d4ff, #8b5cf6, #00ff87); background-size: 200% 100%; animation: shimmer 3s linear infinite; }}
+  @keyframes shimmer {{ 0% {{ background-position: 0% 0; }} 100% {{ background-position: 200% 0; }} }}
+  .header {{ padding: 28px 32px 20px; border-bottom: 1px solid #1e1e2e; display: flex; align-items: baseline; gap: 16px; }}
+  .header h1 {{ font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }}
+  .tag {{ font-size: 11px; color: #00ff87; border: 1px solid #00ff8740; background: #00ff8710; padding: 3px 10px; border-radius: 99px; letter-spacing: 1px; text-transform: uppercase; }}
+  .byline {{ margin-left: auto; font-size: 11px; color: #444; }}
+  .body {{ padding: 24px 32px; }}
+  .tweet-list {{ list-style: none; }}
+  .tweet-item {{ padding: 12px 0; border-bottom: 1px solid #13131f; font-size: 13px; color: #ccc; line-height: 1.6; }}
+  .tweet-item:last-child {{ border-bottom: none; }}
+  .tweet-num {{ color: #00ff87; font-weight: 700; margin-right: 8px; }}
+  .footer {{ padding: 16px 32px; border-top: 1px solid #1e1e2e; display: flex; justify-content: space-between; background: #0b0b14; }}
+  .footer-note {{ font-size: 10px; color: #333; }}
+  .footer-brand {{ font-size: 11px; color: #00ff87; font-weight: 600; }}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>{topic}</h1>
+    <span class="tag">2026</span>
+    <span class="byline">jaymesinthestack.com</span>
+  </div>
+  <div class="body">
+    <ul class="tweet-list">
+"""
+    for i, tweet in enumerate(tweets[:5], 1):
+        clean = tweet.replace('<', '&lt;').replace('>', '&gt;')
+        html += f'      <li class="tweet-item"><span class="tweet-num">{i}/</span>{clean}</li>\n'
+    
+    html += """    </ul>
+  </div>
+  <div class="footer">
+    <span class="footer-note">Full thread on X — @jaymes_stack</span>
+    <span class="footer-brand">jaymes_stack</span>
+  </div>
+</div>
+</body>
+</html>"""
+    
+    output_path.write_text(html, encoding="utf-8")
+
+
 def save_output(channel: str, content: dict, output_dir: Path, brief: dict):
     """Save generated content to files."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     slug = brief['topic'][:40].lower().replace(' ', '_').replace('/', '_').replace(':', '').replace('?', '').replace('*', '').replace('"', '').replace('<', '').replace('>', '').replace('|', '').replace('\\', '')
     
     if channel == "blog":
-        # Save as markdown
         filepath = output_dir / f"blog_{slug}_{timestamp}.md"
         if "content" in content:
-            md = f"# {content.get('title', '')}\n\n"
-            md += f"*Meta: {content.get('meta_description', '')}*\n\n"
-            md += content["content"]
+            # Hashnode requires title/subtitle/body as separate fields
+            md = f"TITLE:\n{content.get('title', '')}\n\n"
+            md += f"SUBTITLE:\n{content.get('meta_description', '')}\n\n"
+            md += f"BODY:\n{content['content']}"
             filepath.write_text(md, encoding="utf-8")
         else:
             filepath.write_text(content.get("raw", str(content)), encoding="utf-8")
+
+    elif channel == "twitter_thread":
+        # Save JSON
+        filepath = output_dir / f"twitter_thread_{slug}_{timestamp}.json"
+        filepath.write_text(json.dumps(content, indent=2), encoding="utf-8")
+
+        # Also save Typefully-ready .txt (tweets separated by ---)
+        tweets = content.get("tweets", [])
+        txt_path = output_dir / f"twitter_thread_{slug}_{timestamp}.txt"
+        txt_content = ""
+        over_limit = []
+        for i, tweet in enumerate(tweets, 1):
+            txt_content += tweet + "\n\n---\n\n"
+            if len(tweet) > 280:
+                over_limit.append((i, len(tweet)))
+        txt_path.write_text(txt_content.strip(), encoding="utf-8")
+
+        # Warn about any tweets over 280 chars
+        if over_limit:
+            warn_path = output_dir / f"twitter_thread_{slug}_{timestamp}_WARNINGS.txt"
+            warnings = "TWEETS OVER 280 CHARACTERS - NEEDS EDITING:\n\n"
+            for num, length in over_limit:
+                warnings += f"Tweet {num}: {length} chars ({length - 280} over limit)\n"
+                warnings += f"{tweets[num-1]}\n\n"
+            warn_path.write_text(warnings, encoding="utf-8")
+
+        # Generate benchmark table HTML if content has tabular data
+        if "tweets" in content and len(tweets) > 0:
+            html_path = output_dir / f"twitter_graphic_{slug}_{timestamp}.html"
+            _generate_benchmark_html(content, brief, html_path)
+
     else:
-        # Save as JSON
         filepath = output_dir / f"{channel}_{slug}_{timestamp}.json"
         filepath.write_text(json.dumps(content, indent=2), encoding="utf-8")
-    
+
     return filepath
 
 
