@@ -114,7 +114,7 @@ def run_topic(topic: dict) -> bool:
             "audience":      topic.get("audience", "developers and technical professionals"),
         }
 
-        channels = topic.get("channels", ["blog", "newsletter", "twitter_thread"])
+        channels = topic.get("channels", ["blog", "newsletter", "twitter_thread", "instagram", "pinterest"])
         output_dir = _Path("output") / topic["slug"]
         output_dir.mkdir(parents=True, exist_ok=True)
 
